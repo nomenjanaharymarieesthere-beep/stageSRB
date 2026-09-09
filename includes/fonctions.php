@@ -139,10 +139,16 @@ function statut_label(string $statut): string {
         'oriente_srpe'          => 'Orienté vers SRPE',
         'envoye_division'       => 'Envoyé à la division',
         'envoye_coordonnateur'  => 'En vérification (Coordonnateur)',
+        'envoye_secretaire'     => 'Traité - envoyé au Secrétaire',
         'a_corriger'            => 'Retourné pour correction',
         'valide'                => 'Validé - envoyé au Secrétaire',
         'en_signature'          => 'En attente de signature',
         'archive'               => 'Traité, signé et archivé',
+        // Circuit de sortie (courrier avec référence départ)
+        'sortie_drbf'           => 'Sortie - envoyé au Directeur',
+        'sortie_service'        => 'Sortie - envoyé au service',
+        'sortie_division'       => 'Sortie - envoyé à la division',
+        'sortie_stockee'        => 'Sortie - stocké dans la division',
     ];
     return $labels[$statut] ?? $statut;
 }
@@ -156,10 +162,15 @@ function statut_badge_class(string $statut): string {
         'oriente_srpe'         => 'badge-blue',
         'envoye_division'      => 'badge-indigo',
         'envoye_coordonnateur' => 'badge-amber',
+        'envoye_secretaire'    => 'badge-green',
         'a_corriger'           => 'badge-red',
         'valide'               => 'badge-green',
         'en_signature'         => 'badge-teal',
         'archive'              => 'badge-dark-green',
+        'sortie_drbf'          => 'badge-blue',
+        'sortie_service'       => 'badge-indigo',
+        'sortie_division'      => 'badge-amber',
+        'sortie_stockee'       => 'badge-dark-green',
     ];
     return $map[$statut] ?? 'badge-gray';
 }
@@ -231,8 +242,19 @@ function generer_reference(): string {
     return sprintf("DRBF-%s-%04d", $annee, $count);
 }
 
+function set_reference_depart(int $courrierId, string $referenceDepart): void {
+    $db = getDB();
+    $check = $db->prepare("SELECT id FROM courriers WHERE reference_depart = ? AND id != ?");
+    $check->execute([$referenceDepart, $courrierId]);
+    if ($check->fetch()) {
+        throw new RuntimeException("Cette référence de départ existe déjà.");
+    }
+    $db->prepare("UPDATE courriers SET reference_depart = ?, updated_at = NOW() WHERE id = ?")
+       ->execute([$referenceDepart, $courrierId]);
+}
+
 /* =========================================================
-   DONNÉES STRUCTURE (services / divisions)
+    DONNÉES STRUCTURE (services / divisions)
 ========================================================= */
 function divisions_srb(): array {
     return ['PE' => 'DIV PE', 'FL-EPN' => 'DIV FL-EPN', 'Execution-RFM' => 'DIV Exécution-RFM', 'CIR' => 'DIV CIR'];

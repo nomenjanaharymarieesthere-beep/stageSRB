@@ -15,6 +15,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new RuntimeException("Veuillez remplir tous les champs obligatoires.");
         }
 
+        $check = $db->prepare("SELECT id FROM courriers WHERE reference = ?");
+        $check->execute([$reference]);
+        if ($check->fetch()) {
+            throw new RuntimeException("Cette référence existe déjà. Veuillez utiliser une référence unique.");
+        }
+
         $pdfFile = handle_pdf_upload('pdf_courrier', 'original');
 
         $stmt = $db->prepare("INSERT INTO courriers

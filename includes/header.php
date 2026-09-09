@@ -13,13 +13,14 @@ $navByRole = [
         ['key' => 'dashboard', 'label' => 'Tableau de bord', 'href' => '/secretaire/dashboard.php', 'icon' => '📊'],
         ['key' => 'enregistrer', 'label' => 'Enregistrer un courrier', 'href' => '/secretaire/enregistrer_courrier.php', 'icon' => '✍️'],
         ['key' => 'envoyer', 'label' => 'Envoyer au Directeur', 'href' => '/secretaire/envoyer_directeur.php', 'icon' => '📤'],
-        ['key' => 'recus', 'label' => 'Courriers validés', 'href' => '/secretaire/courriers_recus.php', 'icon' => '📥'],
+        ['key' => 'recus', 'label' => 'Courriers validés / réf. départ', 'href' => '/secretaire/courriers_recus.php', 'icon' => '📥'],
         ['key' => 'signes', 'label' => 'Courriers signés / Archives', 'href' => '/secretaire/courriers_signes.php', 'icon' => '🗄️'],
         ['key' => 'historique', 'label' => 'Historique', 'href' => '/secretaire/historique.php', 'icon' => '🕘'],
     ],
     'drbf' => [
         ['key' => 'dashboard', 'label' => 'Tableau de bord', 'href' => '/drbf/dashboard.php', 'icon' => '📊'],
         ['key' => 'recus', 'label' => 'Courriers reçus', 'href' => '/drbf/courriers_recus.php', 'icon' => '📥'],
+        ['key' => 'sortie', 'label' => 'Courriers sortants (réf. départ)', 'href' => '/drbf/courriers_sortie.php', 'icon' => '📤'],
         ['key' => 'orienter', 'label' => 'Orienter un courrier', 'href' => '/drbf/orienter_courrier.php', 'icon' => '🧭'],
         ['key' => 'historique', 'label' => 'Historique', 'href' => '/drbf/historique.php', 'icon' => '🕘'],
     ],
@@ -39,12 +40,14 @@ $navByRole = [
         ['key' => 'dashboard', 'label' => 'Tableau de bord', 'href' => '/srpe/dashboard.php', 'icon' => '📊'],
         ['key' => 'recus', 'label' => 'Courriers reçus', 'href' => '/srpe/courriers_recus.php', 'icon' => '📥'],
         ['key' => 'traiter', 'label' => 'Traiter un courrier', 'href' => '/srpe/traiter_courrier.php', 'icon' => '🛠️'],
+        ['key' => 'recus_sortie', 'label' => 'Courriers sortants (réf. départ)', 'href' => '/srpe/courriers_sortie.php', 'icon' => '📤'],
         ['key' => 'historique', 'label' => 'Historique', 'href' => '/srpe/historique.php', 'icon' => '🕘'],
     ],
     'division' => [
         ['key' => 'dashboard', 'label' => 'Tableau de bord', 'href' => '/division/dashboard.php', 'icon' => '📊'],
         ['key' => 'recus', 'label' => 'Courriers reçus', 'href' => '/division/courriers_recus.php', 'icon' => '📥'],
         ['key' => 'traiter', 'label' => 'Traiter le courrier', 'href' => '/division/traiter.php', 'icon' => '🛠️'],
+        ['key' => 'recus_sortie', 'label' => 'Courriers sortants (réf. départ)', 'href' => '/division/courriers_sortie.php', 'icon' => '📤'],
         ['key' => 'historique', 'label' => 'Historique', 'href' => '/division/historique.php', 'icon' => '🕘'],
     ],
     'coordonnateur' => [
@@ -222,6 +225,24 @@ tbody tr:hover td{background:#f7f9fc;}
 .badge-green{background:#e5f4ec;color:var(--green);border-color:#cfe9dc;}
 .badge-teal{background:#e0f3f0;color:var(--teal);border-color:#c8e8e3;}
 .badge-dark-green{background:#e3efe5;color:#14532d;border-color:#c9e0cd;}
+
+/* ============ RÉFÉRENCES ============ */
+.ref-arrivee{display:inline-flex;align-items:center;gap:6px;background:#eef0f4;border:1px solid #dfe3ea;
+  color:var(--navy-900);font-weight:700;font-size:12px;padding:4px 10px;border-radius:6px;white-space:nowrap;}
+.ref-depart{display:inline-flex;align-items:center;gap:6px;background:var(--gold-100);border:1px solid var(--gold-400);
+  color:#8a6515;font-weight:700;font-size:12px;padding:4px 10px;border-radius:6px;white-space:nowrap;}
+.ref-empty{color:var(--muted);font-style:italic;}
+.ref-set-tag{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--green);font-weight:600;}
+.ref-set-tag::before{content:'✓';}
+
+/* ============ RECHERCHE ============ */
+.search-bar{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;background:#f7f9fc;
+  border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:18px;}
+.search-bar .field{flex:1;min-width:220px;}
+.search-bar label{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-weight:700;}
+.search-bar .clear-btn{display:inline-flex;align-items:center;height:38px;padding:0 14px;border-radius:7px;
+  background:#fff;color:var(--navy-900);border:1px solid var(--border);font-size:13px;font-weight:600;transition:.15s;}
+.search-bar .clear-btn:hover{background:#f6f8fb;border-color:#c9d2e0;}
 
 /* ============ BUTTONS ============ */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:7px;font-size:13px;

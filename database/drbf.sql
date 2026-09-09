@@ -32,6 +32,7 @@ CREATE TABLE users (
 CREATE TABLE courriers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     reference VARCHAR(50) UNIQUE NOT NULL,
+    reference_depart VARCHAR(50) DEFAULT NULL,
     objet VARCHAR(255) NOT NULL,
     expediteur VARCHAR(255) NOT NULL,
     date_reception DATE NOT NULL,
