@@ -14,47 +14,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdfTraite = handle_pdf_upload('pdf_traite', 'div_' . $u['division_code']);
         if (!$pdfTraite) throw new RuntimeException("Veuillez téléverser le PDF du document traité.");
 
-        // SRSP : les divisions envoient directement à la Secrétaire (sans Coordonnateur)
-        if ($u['service'] === 'SRSP') {
-            $secretaire = $db->query("SELECT * FROM users WHERE role = 'secretaire' LIMIT 1")->fetch();
-            if (!$secretaire) throw new RuntimeException("Aucun compte Secrétaire trouvé.");
+        // Toutes les divisions (SRB et SRSP) transmettent le courrier au Coordonnateur pour vérification.
+        $coordonnateur = $db->query("SELECT * FROM users WHERE role = 'coordonnateur' LIMIT 1")->fetch();
+        if (!$coordonnateur) throw new RuntimeException("Aucun compte Coordonnateur trouvé.");
 
-            transmettre_courrier([
-                'courrier_id' => $courrierId,
-                'from_user_id' => $u['id'], 'to_user_id' => $secretaire['id'],
-                'from_role' => 'division', 'to_role' => 'secretaire',
-                'action' => 'envoi_secretaire',
-                'pdf_file' => $pdfTraite,
-                'nouveau_statut' => 'envoye_secretaire',
-                'pdf_courant' => $pdfTraite,
-                'notif_message' => "La division {$u['division_code']} (SRSP) a transmis le courrier {$courrier['reference']} (réf. arrivée) au Secrétariat.",
-                'hist_from' => "Envoi du courrier traité {$courrier['reference']} directement au Secrétariat.",
-                'hist_to' => "Réception du courrier {$courrier['reference']} traité par la {$u['division_code']} (SRSP).",
-            ]);
+        $estCorrection = $courrier['statut'] === 'a_corriger';
 
-            flash_set('success', "Courrier {$courrier['reference']} envoyé au Secrétariat (réf. arrivée : {$courrier['reference']}).");
-        } else {
-            // SRB (et autres) : envoi au Coordonnateur
-            $coordonnateur = $db->query("SELECT * FROM users WHERE role = 'coordonnateur' LIMIT 1")->fetch();
-            if (!$coordonnateur) throw new RuntimeException("Aucun compte Coordonnateur trouvé.");
+        transmettre_courrier([
+            'courrier_id' => $courrierId,
+            'from_user_id' => $u['id'], 'to_user_id' => $coordonnateur['id'],
+            'from_role' => 'division', 'to_role' => 'coordonnateur',
+            'action' => $estCorrection ? 'renvoi_apres_correction' : 'envoi_coordonnateur',
+            'pdf_file' => $pdfTraite,
+            'nouveau_statut' => 'envoye_coordonnateur',
+            'pdf_courant' => $pdfTraite,
+            'notif_message' => "La {$u['division_code']} a " . ($estCorrection ? "renvoyé après correction" : "transmis") . " le courrier {$courrier['reference']} pour vérification.",
+            'hist_from' => ($estCorrection ? "Renvoi après correction du courrier {$courrier['reference']} au Coordonnateur." : "Envoi du courrier traité {$courrier['reference']} au Coordonnateur."),
+            'hist_to' => "Réception du courrier {$courrier['reference']} traité par la {$u['division_code']} pour vérification.",
+        ]);
 
-            $estCorrection = $courrier['statut'] === 'a_corriger';
-
-            transmettre_courrier([
-                'courrier_id' => $courrierId,
-                'from_user_id' => $u['id'], 'to_user_id' => $coordonnateur['id'],
-                'from_role' => 'division', 'to_role' => 'coordonnateur',
-                'action' => $estCorrection ? 'renvoi_apres_correction' : 'envoi_coordonnateur',
-                'pdf_file' => $pdfTraite,
-                'nouveau_statut' => 'envoye_coordonnateur',
-                'pdf_courant' => $pdfTraite,
-                'notif_message' => "La {$u['division_code']} a " . ($estCorrection ? "renvoyé après correction" : "transmis") . " le courrier {$courrier['reference']} pour vérification.",
-                'hist_from' => ($estCorrection ? "Renvoi après correction du courrier {$courrier['reference']} au Coordonnateur." : "Envoi du courrier traité {$courrier['reference']} au Coordonnateur."),
-                'hist_to' => "Réception du courrier {$courrier['reference']} traité par la {$u['division_code']} pour vérification.",
-            ]);
-
-            flash_set('success', "Courrier {$courrier['reference']} envoyé au Coordonnateur pour vérification.");
-        }
+        flash_set('success', "Courrier {$courrier['reference']} envoyé au Coordonnateur pour vérification.");
     } catch (Throwable $e) {
         flash_set('error', $e->getMessage());
     }
@@ -70,10 +49,9 @@ if (!$courrier || $courrier['division_id'] != $u['id'] || !in_array($courrier['s
     exit;
 }
 
-$estSrsp = ($u['service'] === 'SRSP');
-$destinataire = $estSrsp ? 'la Secrétaire' : 'le Coordonnateur';
+$destinataire = 'le Coordonnateur';
 
-$pageTitle = $estSrsp ? "Envoyer au Secrétariat" : "Envoyer au Coordonnateur";
+$pageTitle = "Envoyer au Coordonnateur";
 $activeNav = 'traiter';
 include __DIR__ . '/../includes/header.php';
 ?>
@@ -81,11 +59,9 @@ include __DIR__ . '/../includes/header.php';
 <div class="panel" style="max-width:520px;">
   <h3>Finaliser le traitement de <?= e($courrier['reference']) ?></h3>
   <p style="color:var(--muted);font-size:13.5px;"><?= e($courrier['objet']) ?></p>
-  <?php if ($estSrsp): ?>
-    <p style="background:var(--gold-100);border:1px solid var(--gold-400);border-radius:8px;padding:10px 14px;font-size:13px;color:#8a6515;">
-      Votre division (SRSP) enverra ce dossier <strong>directement à la Secrétaire</strong>, sans passer par le Coordonnateur.
-    </p>
-  <?php endif; ?>
+  <p style="background:var(--gold-100);border:1px solid var(--gold-400);border-radius:8px;padding:10px 14px;font-size:13px;color:#8a6515;">
+    Votre division transmet ce dossier au Coordonnateur, qui vérifiera le traitement avant tout envoi au Chef de Service.
+  </p>
   <form method="post" enctype="multipart/form-data">
     <input type="hidden" name="courrier_id" value="<?= $courrier['id'] ?>">
     <div class="form-row">

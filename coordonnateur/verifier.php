@@ -14,20 +14,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($decision === 'valider') {
-            $secretaire = $db->query("SELECT * FROM users WHERE role = 'secretaire' LIMIT 1")->fetch();
-            if (!$secretaire) throw new RuntimeException("Aucun compte Secrétaire trouvé.");
+            // Trouver le Chef de Service correspondant au service cible
+            $chefMap = [
+                'SRB'  => ['role' => 'chef_srb',  'label' => 'Chef SRB'],
+                'SRSP' => ['role' => 'chef_srsp', 'label' => 'Chef SRSP'],
+                'SRPE' => ['role' => 'srpe',      'label' => 'Chef SRPE'],
+            ];
+            $t = $chefMap[$courrier['service_cible']] ?? null;
+            if (!$t) throw new RuntimeException("Service cible du courrier introuvable.");
+
+            $chef = $db->prepare("SELECT * FROM users WHERE role = ? LIMIT 1");
+            $chef->execute([$t['role']]);
+            $chef = $chef->fetch();
+            if (!$chef) throw new RuntimeException("Aucun compte {$t['label']} trouvé.");
 
             transmettre_courrier([
                 'courrier_id' => $courrierId,
-                'from_user_id' => $u['id'], 'to_user_id' => $secretaire['id'],
-                'from_role' => 'coordonnateur', 'to_role' => 'secretaire',
+                'from_user_id' => $u['id'], 'to_user_id' => $chef['id'],
+                'from_role' => 'coordonnateur', 'to_role' => $t['role'],
                 'action' => 'validation', 'remarque' => $remarque,
-                'nouveau_statut' => 'valide',
-                'notif_message' => "Le Coordonnateur a validé le courrier {$courrier['reference']}.",
-                'hist_from' => "Validation du courrier {$courrier['reference']}, envoyé au Secrétariat.",
-                'hist_to' => "Réception du courrier validé {$courrier['reference']} du Coordonnateur.",
+                'nouveau_statut' => 'valide_chef',
+                'notif_message' => "Le Coordonnateur a validé le courrier {$courrier['reference']} — consultez le dossier et transmettez-le au DRBF pour validation finale.",
+                'hist_from' => "Validation du courrier {$courrier['reference']} — renvoyé au {$t['label']}.",
+                'hist_to' => "Réception du courrier {$courrier['reference']} validé par le Coordonnateur.",
             ]);
-            flash_set('success', "Courrier {$courrier['reference']} validé et envoyé au Secrétariat.");
+            flash_set('success', "Courrier {$courrier['reference']} validé et renvoyé au {$t['label']} pour transmission au DRBF.");
 
         } elseif ($decision === 'retourner') {
             if ($remarque === '') throw new RuntimeException("Veuillez indiquer une remarque expliquant les erreurs à corriger.");

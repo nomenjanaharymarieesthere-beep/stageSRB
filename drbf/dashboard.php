@@ -8,7 +8,8 @@ $enAttente = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut = 'envoye
 $versSRB = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut = 'oriente_srb'")->fetch()['c'];
 $versSRSP = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut = 'oriente_srsp'")->fetch()['c'];
 $versSRPE = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut = 'oriente_srpe'")->fetch()['c'];
-$archives = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut = 'archive'")->fetch()['c'];
+$aValider = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut = 'soumis_drbf'")->fetch()['c'];
+$valides = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut = 'valide'")->fetch()['c'];
 
 $recents = $db->query("SELECT * FROM courriers WHERE statut != 'nouveau' ORDER BY updated_at DESC LIMIT 50")->fetchAll();
 
@@ -23,7 +24,8 @@ include __DIR__ . '/../includes/header.php';
   <div class="stat-card c-blue"><div class="num"><?= $versSRB ?></div><div class="lbl">Orientés vers SRB</div></div>
   <div class="stat-card c-indigo"><div class="num"><?= $versSRSP ?></div><div class="lbl">Orientés vers SRSP</div></div>
   <div class="stat-card c-green"><div class="num"><?= $versSRPE ?></div><div class="lbl">Orientés vers SRPE</div></div>
-  <div class="stat-card"><div class="num"><?= $archives ?></div><div class="lbl">Dossiers archivés</div></div>
+  <div class="stat-card c-red"><div class="num"><?= $aValider ?></div><div class="lbl">À valider (transmission finale)</div></div>
+  <div class="stat-card c-green"><div class="num"><?= $valides ?></div><div class="lbl">Validés (transmis au Secrétariat)</div></div>
 </div>
 
 <div class="panel">

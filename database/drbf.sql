@@ -32,6 +32,7 @@ CREATE TABLE users (
 CREATE TABLE courriers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     reference VARCHAR(50) UNIQUE NOT NULL,
+    reference_origine VARCHAR(255) DEFAULT NULL,
     reference_depart VARCHAR(50) DEFAULT NULL,
     objet VARCHAR(255) NOT NULL,
     expediteur VARCHAR(255) NOT NULL,
@@ -39,6 +40,7 @@ CREATE TABLE courriers (
     description TEXT,
     pdf_original VARCHAR(255) DEFAULT NULL,
     pdf_courant VARCHAR(255) DEFAULT NULL,
+    pdf_complementaire VARCHAR(255) DEFAULT NULL,
     statut VARCHAR(30) NOT NULL DEFAULT 'nouveau',
     service_cible VARCHAR(10) DEFAULT NULL,
     division_cible VARCHAR(30) DEFAULT NULL,

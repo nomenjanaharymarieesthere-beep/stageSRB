@@ -141,7 +141,9 @@ function statut_label(string $statut): string {
         'envoye_coordonnateur'  => 'En vérification (Coordonnateur)',
         'envoye_secretaire'     => 'Traité - envoyé au Secrétaire',
         'a_corriger'            => 'Retourné pour correction',
-        'valide'                => 'Validé - envoyé au Secrétaire',
+        'valide_chef'           => 'Validé par le Coordonnateur — chez le Chef de Service',
+        'soumis_drbf'           => 'Transmis au DRBF pour validation finale',
+        'valide'                => 'Validé par le DRBF - transmis à la Secrétaire',
         'en_signature'          => 'En attente de signature',
         'archive'               => 'Traité, signé et archivé',
         // Circuit de sortie (courrier avec référence départ)
@@ -164,6 +166,8 @@ function statut_badge_class(string $statut): string {
         'envoye_coordonnateur' => 'badge-amber',
         'envoye_secretaire'    => 'badge-green',
         'a_corriger'           => 'badge-red',
+        'valide_chef'          => 'badge-teal',
+        'soumis_drbf'          => 'badge-blue',
         'valide'               => 'badge-green',
         'en_signature'         => 'badge-teal',
         'archive'              => 'badge-dark-green',
@@ -344,7 +348,7 @@ function transmettre_courrier(array $params): void {
 
         $fields = ['statut = ?', 'updated_at = NOW()'];
         $values = [$params['nouveau_statut']];
-        foreach (['service_cible', 'division_cible', 'chef_service_id', 'division_id', 'pdf_courant'] as $optField) {
+        foreach (['service_cible', 'division_cible', 'chef_service_id', 'division_id', 'pdf_courant', 'pdf_complementaire'] as $optField) {
             if (array_key_exists($optField, $params)) {
                 $fields[] = "$optField = ?";
                 $values[] = $params[$optField];

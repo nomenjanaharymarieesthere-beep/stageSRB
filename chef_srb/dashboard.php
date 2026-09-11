@@ -8,7 +8,9 @@ $enAttente = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut = 'orient
 $enDivision = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut = 'envoye_division' AND service_cible = 'SRB'")->fetch()['c'];
 $enVerif = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut = 'envoye_coordonnateur' AND service_cible = 'SRB'")->fetch()['c'];
 $aCorriger = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut = 'a_corriger' AND service_cible = 'SRB'")->fetch()['c'];
-$traites = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut IN ('valide','en_signature','archive') AND service_cible = 'SRB'")->fetch()['c'];
+$aTransmettre = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut = 'valide_chef' AND service_cible = 'SRB'")->fetch()['c'];
+$soumisDrbf = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut = 'soumis_drbf' AND service_cible = 'SRB'")->fetch()['c'];
+$traites = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut IN ('valide','valide_chef','soumis_drbf','archive') AND service_cible = 'SRB'")->fetch()['c'];
 
 $recents = $db->query("SELECT * FROM courriers WHERE service_cible = 'SRB' ORDER BY updated_at DESC LIMIT 50")->fetchAll();
 
@@ -22,6 +24,8 @@ include __DIR__ . '/../includes/header.php';
   <div class="stat-card c-amber"><div class="num"><?= $enAttente ?></div><div class="lbl">À orienter vers une division</div></div>
   <div class="stat-card c-indigo"><div class="num"><?= $enDivision ?></div><div class="lbl">En traitement par division</div></div>
   <div class="stat-card c-red"><div class="num"><?= $aCorriger ?></div><div class="lbl">Retournés pour correction</div></div>
+  <div class="stat-card c-teal"><div class="num"><?= $aTransmettre ?></div><div class="lbl">À transmettre au DRBF</div></div>
+  <div class="stat-card c-blue"><div class="num"><?= $soumisDrbf ?></div><div class="lbl">Transmis au DRBF (en attente)</div></div>
   <div class="stat-card c-green"><div class="num"><?= $traites ?></div><div class="lbl">Traités / validés</div></div>
 </div>
 

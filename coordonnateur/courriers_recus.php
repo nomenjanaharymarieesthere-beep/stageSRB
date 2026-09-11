@@ -3,7 +3,7 @@ require_once __DIR__ . '/../includes/fonctions.php';
 $u = require_role(['coordonnateur']);
 $db = getDB();
 
-$courriers = $db->query("SELECT * FROM courriers WHERE statut IN ('envoye_coordonnateur','a_corriger','valide','en_signature','archive') ORDER BY created_at DESC")->fetchAll();
+$courriers = $db->query("SELECT * FROM courriers WHERE statut IN ('envoye_coordonnateur','a_corriger','valide_chef','soumis_drbf','valide','en_signature','archive') ORDER BY created_at DESC")->fetchAll();
 
 $pageTitle = "Courriers reçus";
 $activeNav = 'recus';

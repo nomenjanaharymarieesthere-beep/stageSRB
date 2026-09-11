@@ -6,10 +6,10 @@ $db = getDB();
 $totalRecus = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut NOT IN ('nouveau','envoye_drbf')")->fetch()['c'];
 $enVerif = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut = 'envoye_coordonnateur'")->fetch()['c'];
 $aCorriger = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut = 'a_corriger'")->fetch()['c'];
-$valides = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut IN ('valide','en_signature','archive')")->fetch()['c'];
+$valides = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut IN ('valide_chef','soumis_drbf','valide','en_signature','archive')")->fetch()['c'];
 $archives = $db->query("SELECT COUNT(*) c FROM courriers WHERE statut = 'archive'")->fetch()['c'];
 
-$recents = $db->query("SELECT * FROM courriers WHERE statut IN ('envoye_coordonnateur','a_corriger','valide') ORDER BY updated_at DESC LIMIT 50")->fetchAll();
+$recents = $db->query("SELECT * FROM courriers WHERE statut IN ('envoye_coordonnateur','a_corriger','valide_chef','soumis_drbf','valide') ORDER BY updated_at DESC LIMIT 50")->fetchAll();
 
 $pageTitle = "Tableau de bord — Coordonnateur";
 $activeNav = 'dashboard';

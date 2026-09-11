@@ -5,33 +5,34 @@ $db = getDB();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
+        $referenceOrigine = trim($_POST['reference_origine'] ?? '');
         $reference = trim($_POST['reference'] ?? '');
         $objet = trim($_POST['objet'] ?? '');
         $expediteur = trim($_POST['expediteur'] ?? '');
         $dateReception = trim($_POST['date_reception'] ?? '');
         $description = trim($_POST['description'] ?? '');
 
-        if ($reference === '' || $objet === '' || $expediteur === '' || $dateReception === '') {
+        if ($referenceOrigine === '' || $reference === '' || $objet === '' || $expediteur === '' || $dateReception === '') {
             throw new RuntimeException("Veuillez remplir tous les champs obligatoires.");
         }
 
         $check = $db->prepare("SELECT id FROM courriers WHERE reference = ?");
         $check->execute([$reference]);
         if ($check->fetch()) {
-            throw new RuntimeException("Cette référence existe déjà. Veuillez utiliser une référence unique.");
+            throw new RuntimeException("Cette référence d'arrivée existe déjà. Veuillez utiliser une référence unique.");
         }
 
         $pdfFile = handle_pdf_upload('pdf_courrier', 'original');
 
         $stmt = $db->prepare("INSERT INTO courriers
-            (reference, objet, expediteur, date_reception, description, pdf_original, pdf_courant, statut, created_by)
-            VALUES (?,?,?,?,?,?,?, 'nouveau', ?)");
-        $stmt->execute([$reference, $objet, $expediteur, $dateReception, $description, $pdfFile, $pdfFile, $u['id']]);
+            (reference, reference_origine, objet, expediteur, date_reception, description, pdf_original, pdf_courant, statut, created_by)
+            VALUES (?,?,?,?,?,?,?,?, 'nouveau', ?)");
+        $stmt->execute([$reference, $referenceOrigine, $objet, $expediteur, $dateReception, $description, $pdfFile, $pdfFile, $u['id']]);
         $courrierId = (int)$db->lastInsertId();
 
-        add_historique($u['id'], $courrierId, 'enregistrement', "Enregistrement du courrier $reference ($objet).");
+        add_historique($u['id'], $courrierId, 'enregistrement', "Enregistrement du courrier $reference (réf. origine $referenceOrigine).");
 
-        flash_set('success', "Courrier $reference enregistré avec succès. Vous pouvez maintenant l'envoyer au Directeur.");
+        flash_set('success', "Courrier $reference enregistré avec succès (réf. origine : $referenceOrigine). Vous pouvez maintenant l'envoyer au Directeur.");
         header('Location: ' . root_url('/secretaire/enregistrer_courrier.php'));
         exit;
     } catch (Throwable $e) {
@@ -53,8 +54,14 @@ include __DIR__ . '/../includes/header.php';
   <form method="post" enctype="multipart/form-data">
     <div class="form-grid">
       <div class="form-row">
-        <label>Référence *</label>
+        <label>Référence d'origine (expéditeur) *</label>
+        <input type="text" name="reference_origine" required placeholder="Ex : MINFIN/SG/2026-0142">
+        <div class="hint">Référence attribuée par l'organisme ou la personne qui a envoyé le courrier.</div>
+      </div>
+      <div class="form-row">
+        <label>Référence d'arrivée *</label>
         <input type="text" name="reference" required placeholder="Ex : DRBF-2026-0001">
+        <div class="hint">Référence d'arrivée attribuée par la secrétaire lors de la réception et de l'enregistrement à la DRBF.</div>
       </div>
       <div class="form-row">
         <label>Objet du courrier *</label>
@@ -87,13 +94,14 @@ include __DIR__ . '/../includes/header.php';
 <div class="panel">
   <h3>Liste générale des courriers enregistrés</h3>
   <table>
-    <thead><tr><th>Référence</th><th>Objet</th><th>Expéditeur</th><th>Date réception</th><th>PDF</th><th>Statut</th></tr></thead>
+    <thead><tr><th>Réf. d'arrivée</th><th>Réf. d'origine</th><th>Objet</th><th>Expéditeur</th><th>Date réception</th><th>PDF</th><th>Statut</th></tr></thead>
     <tbody>
       <?php if (empty($courriers)): ?>
-        <tr class="empty-row"><td colspan="6">Aucun courrier enregistré pour le moment.</td></tr>
+        <tr class="empty-row"><td colspan="7">Aucun courrier enregistré pour le moment.</td></tr>
       <?php else: foreach ($courriers as $c): ?>
         <tr>
           <td><strong><?= e($c['reference']) ?></strong></td>
+          <td><span class="ref-empty"><?= $c['reference_origine'] ? e($c['reference_origine']) : '—' ?></span></td>
           <td><?= e($c['objet']) ?></td>
           <td><?= e($c['expediteur']) ?></td>
           <td><?= e($c['date_reception']) ?></td>
